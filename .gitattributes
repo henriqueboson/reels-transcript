@@ -1,0 +1,9 @@
+# Normaliza quebras de linha por tipo de arquivo.
+* text=auto
+
+# Scripts de shell do macOS/Linux precisam de LF (CRLF quebra o shebang).
+*.command text eol=lf
+*.sh      text eol=lf
+
+# Scripts do Windows usam CRLF.
+*.bat     text eol=crlf
