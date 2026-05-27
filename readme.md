@@ -51,23 +51,11 @@ A chave é como uma "senha" que liga o app à OpenAI. Cada pessoa usa a sua pró
 4. Clique em **"Create new secret key"**, dê um nome qualquer e confirme.
 5. **Copie a chave na hora.** Ela aparece **uma única vez** — se fechar a janela, terá que criar outra. A chave começa com `sk-...`.
 
-### Passo 4 — Colocar a chave no app
+### Passo 4 — Deixar a chave à mão (o app pede sozinho)
 
-1. Abra a pasta do app.
-2. Encontre o arquivo chamado **`.env.example`**.
-3. Faça uma **cópia** desse arquivo e renomeie a cópia para **`.env`** (ou seja, tire o `.example` do nome).
-4. Abra o arquivo `.env` com um editor de texto simples (Bloco de Notas no Windows, TextEdit no Mac).
-5. Você verá uma linha assim:
-   ```
-   OPENAI_API_KEY=coloque-sua-chave-aqui
-   ```
-   Troque `coloque-sua-chave-aqui` pela chave que você copiou. Deve ficar assim:
-   ```
-   OPENAI_API_KEY=sk-suachavedeverdadeaqui
-   ```
-6. Salve o arquivo.
+Você **não precisa** mexer em nenhum arquivo de configuração. Na **primeira vez** que abrir o app (próxima seção), ele vai **pedir a sua chave ali mesmo, na janela preta** — é só colar e teclar Enter. O app guarda a chave sozinho e nunca mais pergunta.
 
-> **Dica:** o arquivo precisa se chamar exatamente `.env`, sem nada depois. Se o Bloco de Notas insistir em salvar como `.env.txt`, na hora de salvar escolha "Tipo: Todos os arquivos".
+Então, por enquanto, é só deixar a chave que você copiou no Passo 3 **à mão** (por exemplo, colada num bloco de notas temporário) para usar daqui a pouco.
 
 Pronto — a configuração acabou. Você nunca mais precisa repetir os passos 1 a 4.
 
@@ -79,11 +67,22 @@ Pronto — a configuração acabou. Você nunca mais precisa repetir os passos 1
 
 - **No Windows:** dê dois cliques no arquivo **`iniciar-windows.bat`**.
 - **No Mac:** dê dois cliques no arquivo **`iniciar-mac.command`**.
-  - Na primeiríssima vez, o Mac pode bloquear por segurança. Se isso acontecer, clique no arquivo com o **botão direito → Abrir** e confirme. Depois disso ele abre normal.
+
+> **Mac — liberar na primeira vez (importante).** Como o app vem da internet, o macOS bloqueia por segurança e mostra um aviso tipo *"a Apple não pode verificar se este item contém malware"*. Isso é **esperado** e você libera **só uma vez**:
+>
+> 1. Dê o duplo-clique no `iniciar-mac.command` (ele será bloqueado — pode fechar o aviso).
+> 2. Vá em ** → Ajustes do Sistema → Privacidade e Segurança**.
+> 3. Role até o fim: vai aparecer *"iniciar-mac.command foi bloqueado…"* com o botão **"Abrir Mesmo Assim"**. Clique nele, confirme com a senha/Touch ID e clique **"Abrir"** no aviso seguinte.
+>
+> A partir daí o app abre normalmente no duplo-clique.
+>
+> **Jeito mais garantido (pelo Terminal):** abra o **Terminal** (tecle `Cmd + Espaço`, digite "Terminal" e Enter), escreva `xattr -cr ` (com um espaço no final), **arraste a pasta do app** para dentro da janela do Terminal e tecle **Enter**. Depois é só dar o duplo-clique no `iniciar-mac.command`.
 
 Na **primeira vez**, o app demora alguns minutos preparando tudo — é normal, é só uma vez. Depois ele abre rápido.
 
-Quando estiver pronto, o navegador abre sozinho na tela do app. Vai aparecer também uma janela preta (o "motor" do app) — **deixe ela aberta** enquanto estiver usando.
+**Ainda na primeira vez, a janela preta vai pedir a sua chave da OpenAI** (a do Passo 3). Cole a chave, tecle **Enter**, e pronto — ela fica guardada e ele não pergunta mais.
+
+Quando terminar de preparar, o navegador abre sozinho na tela do app. A janela preta (o "motor" do app) continua aberta — **deixe ela aberta** enquanto estiver usando.
 
 ### Transcrever os reels
 
@@ -100,21 +99,25 @@ Quando terminar, é só **fechar a janela preta**. Para usar de novo depois, bas
 
 ## Problemas comuns
 
+**O Mac diz que "não pode verificar" / bloqueou o `iniciar-mac.command`**
+É a proteção normal do macOS para arquivos vindos da internet — não é vírus. Libere **uma vez** seguindo os passos de **"Mac — liberar na primeira vez"** na seção [Abrir o app](#abrir-o-app). Depois disso o app abre sempre no duplo-clique.
+
 **"O Instagram pediu login" / o reel não baixa**
 O Instagram às vezes exige uma conta logada para liberar o download. Para resolver:
 1. No navegador, entre normalmente na sua conta do Instagram (de preferência, uma conta secundária).
-2. Abra o arquivo `.env` e adicione esta linha:
+2. Abra o arquivo `.env` (ele fica na pasta do app; foi criado automaticamente na primeira vez) e troque a linha `COOKIES_FROM_BROWSER=` por:
    ```
    COOKIES_FROM_BROWSER=chrome
    ```
    Troque `chrome` pelo navegador que você usa: `firefox`, `safari` ou `edge`.
+   - **No Mac**, o `.env` é um arquivo oculto. Para vê-lo, abra a pasta do app no Finder e tecle `Cmd + Shift + .` (ponto). Abra-o com o TextEdit.
 3. **Feche o navegador** e abra o app de novo.
 
 **"Chave inválida" ou erro de autenticação**
 Confira o arquivo `.env`: a chave deve estar completa, sem espaços sobrando, e a conta da OpenAI precisa ter crédito disponível (Passo 3).
 
 **Dei dois cliques e nada acontece**
-- No Mac: clique com o botão direito no arquivo de iniciar → **Abrir**.
+- No Mac: provavelmente é o bloqueio de segurança — veja o item acima ("não pode verificar") e libere o app uma vez.
 - No Windows: confirme que o Python foi instalado com a caixinha **"Add Python to PATH"** marcada. Se não marcou, reinstale o Python marcando essa opção.
 
 **Um reel deu erro mas os outros funcionaram**

@@ -7,6 +7,8 @@ links (um por linha), clique em Transcrever e os resultados aparecem um a um.
 
 import json
 import os
+import shutil
+import sys
 import tempfile
 import threading
 import webbrowser
@@ -209,6 +211,10 @@ https://www.instagram.com/reel/..."></textarea>
       <span class="hint" id="hint">Processa um link de cada vez.</span>
     </div>
 
+    <div class="row" id="bulkRow" style="display:none">
+      <button id="copyAll" class="copy">Copiar todas</button>
+    </div>
+
     <div id="results"></div>
   </div>
 
@@ -217,11 +223,26 @@ const go = document.getElementById('go');
 const linksEl = document.getElementById('links');
 const resultsEl = document.getElementById('results');
 const hintEl = document.getElementById('hint');
+const bulkRow = document.getElementById('bulkRow');
+const copyAll = document.getElementById('copyAll');
 
 function cardId(i) { return 'card-' + i; }
 
+copyAll.addEventListener('click', () => {
+  const blocks = [...document.querySelectorAll('.card.ok')].map(c => {
+    const url = (c.querySelector('.url') || {}).textContent || '';
+    const txt = (c.querySelector('.text') || {}).textContent || '';
+    return url + '\\n' + txt;
+  });
+  if (!blocks.length) return;
+  navigator.clipboard.writeText(blocks.join('\\n\\n----------\\n\\n'));
+  copyAll.textContent = 'Copiado!';
+  setTimeout(() => { copyAll.textContent = 'Copiar todas'; }, 1500);
+});
+
 function renderPending(links) {
   resultsEl.innerHTML = '';
+  bulkRow.style.display = 'none';
   links.forEach((url, i) => {
     const div = document.createElement('div');
     div.className = 'card pending';
@@ -247,6 +268,7 @@ function updateCard(r) {
       navigator.clipboard.writeText(r.text || '');
       div.querySelector('.copy').textContent = 'Copiado!';
     });
+    bulkRow.style.display = 'flex';
   } else {
     div.className = 'card error';
     div.innerHTML = `
@@ -350,7 +372,75 @@ def open_browser():
     webbrowser.open("http://localhost:5000")
 
 
+APP_DIR = os.path.dirname(os.path.abspath(__file__))
+ENV_PATH = os.path.join(APP_DIR, ".env")
+ENV_EXAMPLE_PATH = os.path.join(APP_DIR, ".env.example")
+
+
+def _write_api_key(key):
+    """Grava/atualiza a linha OPENAI_API_KEY no .env preservando o resto."""
+    lines = []
+    if os.path.exists(ENV_PATH):
+        with open(ENV_PATH, "r", encoding="utf-8") as f:
+            lines = f.read().splitlines()
+    out, found = [], False
+    for line in lines:
+        if line.startswith("OPENAI_API_KEY="):
+            out.append("OPENAI_API_KEY=" + key)
+            found = True
+        else:
+            out.append(line)
+    if not found:
+        out.append("OPENAI_API_KEY=" + key)
+    with open(ENV_PATH, "w", encoding="utf-8") as f:
+        f.write("\n".join(out) + "\n")
+
+
+def ensure_env_file():
+    """Garante um .env com a chave preenchida; pede a chave no terminal se faltar.
+
+    Resolve o atrito do macOS: o usuário não precisa achar/renomear o arquivo
+    oculto .env.example — o app cria o .env e coleta a chave na primeira vez.
+    """
+    if not os.path.exists(ENV_PATH):
+        if os.path.exists(ENV_EXAMPLE_PATH):
+            shutil.copyfile(ENV_EXAMPLE_PATH, ENV_PATH)
+        else:
+            with open(ENV_PATH, "w", encoding="utf-8") as f:
+                f.write("OPENAI_API_KEY=\nCOOKIES_FROM_BROWSER=\n")
+
+    if OPENAI_API_KEY:
+        return
+
+    # Só dá para perguntar se há um terminal interativo. Em execução sem
+    # terminal, segue em frente (a interface mostra o erro de chave ausente).
+    if not (sys.stdin and sys.stdin.isatty()):
+        return
+
+    print("")
+    print("=== Configuração inicial ===")
+    print("Cole sua chave da OpenAI (começa com sk-...) e tecle Enter:")
+    try:
+        key = input("> ").strip()
+    except EOFError:
+        key = ""
+    if key:
+        _write_api_key(key)
+        # Atualiza para este processo (a interface usa estas variáveis globais).
+        globals()["OPENAI_API_KEY"] = key
+        print("Chave salva no arquivo .env.\n")
+    else:
+        print("Nenhuma chave informada — você pode colá-la depois no arquivo .env.\n")
+
+
 if __name__ == "__main__":
+    # No console legado do Windows (cp1252/cp850), caracteres fora da codificação
+    # quebrariam os prints; tolera-os em vez de derrubar o app.
+    try:
+        sys.stdout.reconfigure(errors="replace")
+    except Exception:
+        pass
+    ensure_env_file()
     # Abre o navegador automaticamente assim que o servidor sobe.
     threading.Timer(1.2, open_browser).start()
     app.run(host="127.0.0.1", port=5000, debug=False)

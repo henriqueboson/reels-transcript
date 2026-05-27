@@ -4,6 +4,10 @@
 
 cd "$(dirname "$0")" || exit 1
 
+# Remove a marca de "quarentena" do Gatekeeper dos arquivos da pasta, para que
+# nas proximas vezes o app abra sem o aviso "a Apple nao pode verificar...".
+xattr -dr com.apple.quarantine . >/dev/null 2>&1
+
 if command -v python3 >/dev/null 2>&1; then
     PY=python3
 else
